@@ -11,10 +11,13 @@ In this paper, we propose a Global Association Network (GANet) to formulate the 
 ## Installation
  1. Create a conda virtual environment and activate it.
     ```shell
-    conda create -n ganet python=3.7 -y
+    conda create -n ganet python=3.8 -y
     conda activate ganet
-    conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.1 -c pytorch -y
-    pip install -r requirements/build.txt
+    conda install pytorch=1.8 torchvision=0.9.0 cudatoolkit=10.1 -c pytorch
+    pip install openmim
+    mim install mmcv-full
+    mim install mmdet
+    pip install -r requirements.txt
     ```
  2. Clone this repository and enter it:
     ```Shell
@@ -24,53 +27,8 @@ In this paper, we propose a Global Association Network (GANet) to formulate the 
     ```
 
 ## Dataset
-Download datasets and put it into `[data-path]` folder. And edit the `data_root` in the config file to your dataset path.
-### CULane
-[\[CULane website\]](https://xingangpan.github.io/projects/CULane.html)
-[\[Download\]](https://drive.google.com/drive/folders/1mSLgwVTiaUMAb4AVOWwlCD5JcWdrwpvu)
+[Prepare Dataset](dataset.md)
 
-
-The directory structure should be like follows:
-```
-[data-path]/culane
-├── driver_23_30frame
-├── driver_37_30frame
-├── driver_100_30frame
-├── driver_161_90frame
-├── driver_182_30frame
-├── driver_193_90frame
-└── list
-    └── test_split
-    |   ├── test0_normal.txt
-    |   ├── test1_crowd.txt
-    |   ├── test2_hlight.txt
-    |   ├── test3_shadow.txt
-    |   ├── test4_noline.txt
-    |   ├── test5_arrow.txt
-    |   ├── test6_curve.txt
-    |   ├── test7_cross.txt
-    |   └── test8_night.txt
-    └── train.txt
-    └── test.txt
-    └── val.txt
-
-```
-### TuSimple
-[\[TuSimple website\]](https://github.com/TuSimple/tusimple-benchmark/tree/master/doc/lane_detection)
-[\[Download\]](https://github.com/TuSimple/tusimple-benchmark/issues/3)
-
-The directory structure should be like follows:
-```
-[data-path]/tusimple
-├── clips
-├── label_data_0313.json
-├── label_data_0531.json
-├── label_data_0601.json
-├── label_data_0601.json
-├── test_label.json
-└── test_baseline.json
-
-```
 ## Evaluation
 Here are our GANet models (released on April 24th, 2022):
 
@@ -92,15 +50,13 @@ To evalute the model, download the corresponding weights file into the `[CHECKPO
 
 ```shell
 # For example, model = ganet-small 
-sh slurm_test.sh [PARTITION] [JOB_NAME] tusimple final_exp_res18_s8 [CHECKPOINT]
-sh dist_test.sh tusimple final_exp_res18_s8 [CHECKPOINT]
+CUDA_VISIBLE_DEVICES=1,2,3 GPUS=3 bash tools/dist_test.sh projects/cfgs/tusimple/final_exp_res18_s8.py [CHECKPOINT] --eval
 ```
 We use the official evaluation tools of [CULane](https://github.com/XingangPan/SCNN) and [TuSimple](https://github.com/TuSimple/tusimple-benchmark/tree/master/evaluate) to evaluate the results. And we include them in `tools` directory which may be helpful for you.
 ## Training
 ```shell
 # For example, model = ganet-small 
-sh slurm_train.sh [PARTITION] [JOB_NAME] tusimple final_exp_res18_s8 ./output
-sh dist_train.sh tusimple final_exp_res18_s8 ./output
+CUDA_VISIBLE_DEVICES=0,1,2,3 GPUS=4 bash tools/dist_train.sh projects/cfgs/culane/final_exp_res18_s8.py
 ```
 # Citation
 If you find this repo useful for your research, please cite
